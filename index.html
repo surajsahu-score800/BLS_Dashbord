@@ -80,7 +80,7 @@
     /* Financial Metrics Cards */
     .metrics-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
       gap: 16px;
       margin-bottom: 28px;
     }
@@ -107,14 +107,14 @@
       margin-bottom: 6px;
     }
     .metric-value {
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 700;
       color: #0f172a;
     }
     .metric-card.highlight .metric-value { color: #dc2626; }
     .metric-card.success .metric-value { color: #16a34a; }
 
-    /* Info Table */
+    /* Info Grid */
     .section-title {
       font-size: 16px;
       font-weight: 700;
@@ -229,7 +229,7 @@
     </div>
 
     <!-- Customer Details -->
-    <div class="section-title">Customer Information</div>
+    <div class="section-title">Customer Details</div>
     <div class="info-grid">
       <div class="info-item">
         <span class="info-label">Customer Name</span>
@@ -256,6 +256,10 @@
         <span class="info-val" id="dispDisburseDate">-</span>
       </div>
       <div class="info-item">
+        <span class="info-label">Last Payment Date</span>
+        <span class="info-val" id="dispLastPaymentDate">-</span>
+      </div>
+      <div class="info-item">
         <span class="info-label">DPD</span>
         <span class="info-val"><span class="dpd-badge" id="dispDpd">0</span></span>
       </div>
@@ -272,7 +276,6 @@
 </div>
 
 <script>
-  // Paste your Apps Script Web App Deployment URL here
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyKJi6jIzH8iluxNf4ojFpcyQBPmaRXw8xJJx-7L_tZTFVsgWoAJEittBaiNeeK4ZJLKw/exec"; 
   
   let allRecords = [];
@@ -325,7 +328,8 @@
       document.getElementById("dispPendingAmt").innerText = match.pendingAmount ? "₹" + match.pendingAmount : "₹0";
       document.getElementById("dispRepayAmt").innerText = match.repayAmount ? "₹" + match.repayAmount : "-";
       document.getElementById("dispSettlementAmt").innerText = match.settlementAmount ? "₹" + match.settlementAmount : "-";
-      document.getElementById("dispDisburseDate").innerText = match.disburseDate;
+      document.getElementById("dispDisburseDate").innerText = match.disburseDate || "-";
+      document.getElementById("dispLastPaymentDate").innerText = match.lastPaymentDate || "-";
       document.getElementById("dispDpd").innerText = match.dpd;
       document.getElementById("dispEmail").innerText = match.email;
       document.getElementById("dispMobile").innerText = match.mobile;

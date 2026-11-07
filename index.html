@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fast Loan Lookup Portal</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
+    .container { max-width: 650px; margin: 20px auto; background: #fff; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    h2 { margin-top: 0; color: #1a73e8; }
+    .search-box { margin-bottom: 20px; }
+    input[type="text"] { width: 100%; padding: 12px; font-size: 16px; border: 2px solid #ddd; border-radius: 6px; box-sizing: border-box; outline: none; transition: 0.2s; }
+    input[type="text"]:focus { border-color: #1a73e8; }
+    textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-family: inherit; }
+    button { padding: 12px 20px; background-color: #1a73e8; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: bold; width: 100%; }
+    button:hover { background-color: #1557b0; }
+    .details-card { display: none; margin-top: 20px; border-top: 2px solid #e8eaed; padding-top: 15px; }
+    .detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f3f4; }
+    .detail-label { font-weight: 600; color: #5f6368; }
+    .detail-value { font-weight: 500; color: #202124; }
+    .remark-section { margin-top: 20px; }
+    .status-badge { display: inline-block; padding: 6px 12px; border-radius: 4px; font-size: 14px; margin-bottom: 15px; font-weight: bold; }
+    .loading { background-color: #e8f0fe; color: #1a73e8; }
+    .ready { background-color: #e6f4ea; color: #137333; }
+    .error { background-color: #fce8e6; color: #c5221f; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Loan Customer Lookup</h2>
+  <div id="appStatus" class="status-badge loading">Loading sheet data... Please wait.</div>
+
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="Type Loan No or Mobile Number here..." oninput="instantSearch()" disabled>
+  </div>
+
+  <div id="detailsCard" class="details-card">
+    <h3>Customer Details</h3>
+    <div class="detail-row"><span class="detail-label">Loan No:</span> <span class="detail-value" id="dispLoanNo"></span></div>
+    <div class="detail-row"><span class="detail-label">Customer Name:</span> <span class="detail-value" id="dispName"></span></div>
+    <div class="detail-row"><span class="detail-label">Loan Amount:</span> <span class="detail-value" id="dispLoanAmt"></span></div>
+    <div class="detail-row"><span class="detail-label">Repay Amount:</span> <span class="detail-value" id="dispRepayAmt"></span></div>
+    <div class="detail-row"><span class="detail-label">Settlement Amount:</span> <span class="detail-value" id="dispSettlementAmt"></span></div>
+    <div class="detail-row"><span class="detail-label">Disburse Date:</span> <span class="detail-value" id="dispDisburseDate"></span></div>
+    <div class="detail-row"><span class="detail-label">DPD:</span> <span class="detail-value" id="dispDpd"></span></div>
+    <div class="detail-row"><span class="detail-label">Email ID:</span> <span class="detail-value" id="dispEmail"></span></div>
+    <div class="detail-row"><span class="detail-label">Mobile Number:</span> <span class="detail-value" id="dispMobile"></span></div>
+
+    <div class="remark-section">
+      <label for="remarkInput"><strong>Agent Remark:</strong></label><br><br>
+      <textarea id="remarkInput" rows="3" placeholder="Enter remark..."></textarea><br><br>
+      <button onclick="submitRemark()">Submit Remark</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Paste your Apps Script Web App Deployment URL here
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyKJi6jIzH8iluxNf4ojFpcyQBPmaRXw8xJJx-7L_tZTFVsgWoAJEittBaiNeeK4ZJLKw/exec"; 
+  
+  let allRecords = [];
+  let currentRecord = null;
+
+  // Load all records once when page loads
+  window.addEventListener('DOMContentLoaded', async () => {
+    const statusBox = document.getElementById("appStatus");
+    const searchInput = document.getElementById("searchInput");
+
+    try {
+      const response = await fetch(SCRIPT_URL);
+      const result = await response.json();
+
+      if (result.status === "success") {
+        allRecords = result.data;
+        statusBox.className = "status-badge ready";
+        statusBox.innerText = `Ready! ${allRecords.length} records loaded.`;
+        searchInput.disabled = false;
+        searchInput.focus();
+      } else {
+        throw new Error("Failed to load data");
+      }
+    } catch (err) {
+      statusBox.className = "status-badge error";
+      statusBox.innerText = "Error loading data from Google Sheet.";
+    }
+  });
+
+  // Instant local search triggered on typing
+  function instantSearch() {
+    const query = document.getElementById("searchInput").value.trim().toLowerCase();
+    const detailsCard = document.getElementById("detailsCard");
+
+    if (!query) {
+      detailsCard.style.display = "none";
+      currentRecord = null;
+      return;
+    }
+
+    // Fast filter inside memory
+    const match = allRecords.find(item => 
+      item.loanNo.toLowerCase() === query || 
+      item.mobile.toLowerCase() === query
+    );
+
+    if (match) {
+      currentRecord = match;
+      document.getElementById("dispLoanNo").innerText = match.loanNo;
+      document.getElementById("dispName").innerText = match.customerName;
+      document.getElementById("dispLoanAmt").innerText = match.loanAmount;
+      document.getElementById("dispRepayAmt").innerText = match.repayAmount;
+      document.getElementById("dispSettlementAmt").innerText = match.settlementAmount;
+      document.getElementById("dispDisburseDate").innerText = match.disburseDate;
+      document.getElementById("dispDpd").innerText = match.dpd;
+      document.getElementById("dispEmail").innerText = match.email;
+      document.getElementById("dispMobile").innerText = match.mobile;
+      document.getElementById("remarkInput").value = match.remark || "";
+
+      detailsCard.style.display = "block";
+    } else {
+      detailsCard.style.display = "none";
+      currentRecord = null;
+    }
+  }
+
+  // Submit updated remark back to Google Sheet
+  async function submitRemark() {
+    if (!currentRecord) return;
+
+    const newRemark = document.getElementById("remarkInput").value.trim();
+    const statusBox = document.getElementById("appStatus");
+
+    statusBox.className = "status-badge loading";
+    statusBox.innerText = "Saving remark...";
+
+    try {
+      const response = await fetch(SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify({
+          rowIndex: currentRecord.rowIndex,
+          remark: newRemark
+        })
+      });
+      const result = await response.json();
+
+      if (result.status === "success") {
+        // Update memory so local copy stays fresh
+        currentRecord.remark = newRemark;
+        statusBox.className = "status-badge ready";
+        statusBox.innerText = "Remark saved to Google Sheet successfully!";
+      } else {
+        throw new Error("Update failed");
+      }
+    } catch (err) {
+      statusBox.className = "status-badge error";
+      statusBox.innerText = "Failed to save remark.";
+    }
+  }
+</script>
+
+</body>
+</html>

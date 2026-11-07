@@ -3,55 +3,271 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fast Loan Lookup Portal</title>
+  <title>Loan Customer Lookup Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
-    .container { max-width: 650px; margin: 20px auto; background: #fff; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-    h2 { margin-top: 0; color: #1a73e8; }
-    .search-box { margin-bottom: 20px; }
-    input[type="text"] { width: 100%; padding: 12px; font-size: 16px; border: 2px solid #ddd; border-radius: 6px; box-sizing: border-box; outline: none; transition: 0.2s; }
-    input[type="text"]:focus { border-color: #1a73e8; }
-    textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-family: inherit; }
-    button { padding: 12px 20px; background-color: #1a73e8; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: bold; width: 100%; }
-    button:hover { background-color: #1557b0; }
-    .details-card { display: none; margin-top: 20px; border-top: 2px solid #e8eaed; padding-top: 15px; }
-    .detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f3f4; }
-    .detail-label { font-weight: 600; color: #5f6368; }
-    .detail-value { font-weight: 500; color: #202124; }
-    .remark-section { margin-top: 20px; }
-    .status-badge { display: inline-block; padding: 6px 12px; border-radius: 4px; font-size: 14px; margin-bottom: 15px; font-weight: bold; }
-    .loading { background-color: #e8f0fe; color: #1a73e8; }
-    .ready { background-color: #e6f4ea; color: #137333; }
-    .error { background-color: #fce8e6; color: #c5221f; }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f4f6f9;
+      color: #1e293b;
+      margin: 0;
+      padding: 30px 15px;
+    }
+    .app-card {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+      padding: 32px;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .header h2 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .status-badge {
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .status-badge.loading { background-color: #e0f2fe; color: #0284c7; }
+    .status-badge.ready { background-color: #dcfce7; color: #166534; }
+    .status-badge.error { background-color: #fee2e2; color: #991b1b; }
+
+    .search-wrapper {
+      position: relative;
+      margin-bottom: 28px;
+    }
+    .search-input {
+      width: 100%;
+      padding: 16px 20px;
+      font-size: 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      outline: none;
+      transition: all 0.2s ease;
+      font-weight: 500;
+    }
+    .search-input:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    }
+
+    .details-container {
+      display: none;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Financial Metrics Cards */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .metric-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 16px;
+      border-radius: 12px;
+    }
+    .metric-card.highlight {
+      background: #fef2f2;
+      border-color: #fecaca;
+    }
+    .metric-card.success {
+      background: #f0fdf4;
+      border-color: #bbf7d0;
+    }
+    .metric-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #64748b;
+      margin-bottom: 6px;
+    }
+    .metric-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .metric-card.highlight .metric-value { color: #dc2626; }
+    .metric-card.success .metric-value { color: #16a34a; }
+
+    /* Info Table */
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 16px;
+      border-bottom: 2px solid #f1f5f9;
+      padding-bottom: 8px;
+    }
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    @media (max-width: 600px) {
+      .info-grid { grid-template-columns: 1fr; }
+    }
+    .info-item {
+      display: flex;
+      flex-direction: column;
+    }
+    .info-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: #64748b;
+      margin-bottom: 4px;
+    }
+    .info-val {
+      font-size: 15px;
+      font-weight: 600;
+      color: #1e293b;
+    }
+    .dpd-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      background: #fee2e2;
+      color: #991b1b;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      width: fit-content;
+    }
+
+    /* Remark Box */
+    .remark-box {
+      margin-top: 24px;
+    }
+    textarea {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      resize: vertical;
+      transition: border-color 0.2s;
+    }
+    textarea:focus {
+      border-color: #2563eb;
+    }
+    .submit-btn {
+      width: 100%;
+      margin-top: 14px;
+      padding: 14px;
+      background-color: #2563eb;
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .submit-btn:hover {
+      background-color: #1d4ed8;
+    }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <h2>Loan Customer Lookup</h2>
-  <div id="appStatus" class="status-badge loading">Loading sheet data... Please wait.</div>
-
-  <div class="search-box">
-    <input type="text" id="searchInput" placeholder="Type Loan No or Mobile Number here..." oninput="instantSearch()" disabled>
+<div class="app-card">
+  <div class="header">
+    <h2>Loan Customer Lookup</h2>
+    <div id="appStatus" class="status-badge loading">Loading database...</div>
   </div>
 
-  <div id="detailsCard" class="details-card">
-    <h3>Customer Details</h3>
-    <div class="detail-row"><span class="detail-label">Loan No:</span> <span class="detail-value" id="dispLoanNo"></span></div>
-    <div class="detail-row"><span class="detail-label">Customer Name:</span> <span class="detail-value" id="dispName"></span></div>
-    <div class="detail-row"><span class="detail-label">Loan Amount:</span> <span class="detail-value" id="dispLoanAmt"></span></div>
-    <div class="detail-row"><span class="detail-label">Repay Amount:</span> <span class="detail-value" id="dispRepayAmt"></span></div>
-    <div class="detail-row"><span class="detail-label">Settlement Amount:</span> <span class="detail-value" id="dispSettlementAmt"></span></div>
-    <div class="detail-row"><span class="detail-label">Disburse Date:</span> <span class="detail-value" id="dispDisburseDate"></span></div>
-    <div class="detail-row"><span class="detail-label">DPD:</span> <span class="detail-value" id="dispDpd"></span></div>
-    <div class="detail-row"><span class="detail-label">Email ID:</span> <span class="detail-value" id="dispEmail"></span></div>
-    <div class="detail-row"><span class="detail-label">Mobile Number:</span> <span class="detail-value" id="dispMobile"></span></div>
+  <div class="search-wrapper">
+    <input type="text" id="searchInput" class="search-input" placeholder="Type Loan No or Mobile Number..." oninput="instantSearch()" disabled>
+  </div>
 
-    <div class="remark-section">
-      <label for="remarkInput"><strong>Agent Remark:</strong></label><br><br>
-      <textarea id="remarkInput" rows="3" placeholder="Enter remark..."></textarea><br><br>
-      <button onclick="submitRemark()">Submit Remark</button>
+  <div id="detailsCard" class="details-container">
+    
+    <!-- Top Summary Cards -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-title">Loan Amount</div>
+        <div class="metric-value" id="dispLoanAmt">₹0</div>
+      </div>
+      <div class="metric-card success">
+        <div class="metric-title">Part Collected</div>
+        <div class="metric-value" id="dispPartCollection">₹0</div>
+      </div>
+      <div class="metric-card highlight">
+        <div class="metric-title">Pending Amount</div>
+        <div class="metric-value" id="dispPendingAmt">₹0</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-title">Repay Amount</div>
+        <div class="metric-value" id="dispRepayAmt">₹0</div>
+      </div>
     </div>
+
+    <!-- Customer Details -->
+    <div class="section-title">Customer Information</div>
+    <div class="info-grid">
+      <div class="info-item">
+        <span class="info-label">Customer Name</span>
+        <span class="info-val" id="dispName">-</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Loan No</span>
+        <span class="info-val" id="dispLoanNo">-</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Mobile Number</span>
+        <span class="info-val" id="dispMobile">-</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Email ID</span>
+        <span class="info-val" id="dispEmail">-</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Settlement Amount</span>
+        <span class="info-val" id="dispSettlementAmt">-</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Disburse Date</span>
+        <span class="info-val" id="dispDisburseDate">-</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">DPD</span>
+        <span class="info-val"><span class="dpd-badge" id="dispDpd">0</span></span>
+      </div>
+    </div>
+
+    <!-- Agent Remark Box -->
+    <div class="remark-box">
+      <div class="section-title">Agent Remark</div>
+      <textarea id="remarkInput" rows="3" placeholder="Enter updated remark here..."></textarea>
+      <button class="submit-btn" onclick="submitRemark()">Submit Remark</button>
+    </div>
+
   </div>
 </div>
 
@@ -62,7 +278,6 @@
   let allRecords = [];
   let currentRecord = null;
 
-  // Load all records once when page loads
   window.addEventListener('DOMContentLoaded', async () => {
     const statusBox = document.getElementById("appStatus");
     const searchInput = document.getElementById("searchInput");
@@ -78,15 +293,14 @@
         searchInput.disabled = false;
         searchInput.focus();
       } else {
-        throw new Error("Failed to load data");
+        throw new Error("Failed to load");
       }
     } catch (err) {
       statusBox.className = "status-badge error";
-      statusBox.innerText = "Error loading data from Google Sheet.";
+      statusBox.innerText = "Error loading data";
     }
   });
 
-  // Instant local search triggered on typing
   function instantSearch() {
     const query = document.getElementById("searchInput").value.trim().toLowerCase();
     const detailsCard = document.getElementById("detailsCard");
@@ -97,7 +311,6 @@
       return;
     }
 
-    // Fast filter inside memory
     const match = allRecords.find(item => 
       item.loanNo.toLowerCase() === query || 
       item.mobile.toLowerCase() === query
@@ -107,9 +320,11 @@
       currentRecord = match;
       document.getElementById("dispLoanNo").innerText = match.loanNo;
       document.getElementById("dispName").innerText = match.customerName;
-      document.getElementById("dispLoanAmt").innerText = match.loanAmount;
-      document.getElementById("dispRepayAmt").innerText = match.repayAmount;
-      document.getElementById("dispSettlementAmt").innerText = match.settlementAmount;
+      document.getElementById("dispLoanAmt").innerText = match.loanAmount ? "₹" + match.loanAmount : "-";
+      document.getElementById("dispPartCollection").innerText = match.partCollection ? "₹" + match.partCollection : "₹0";
+      document.getElementById("dispPendingAmt").innerText = match.pendingAmount ? "₹" + match.pendingAmount : "₹0";
+      document.getElementById("dispRepayAmt").innerText = match.repayAmount ? "₹" + match.repayAmount : "-";
+      document.getElementById("dispSettlementAmt").innerText = match.settlementAmount ? "₹" + match.settlementAmount : "-";
       document.getElementById("dispDisburseDate").innerText = match.disburseDate;
       document.getElementById("dispDpd").innerText = match.dpd;
       document.getElementById("dispEmail").innerText = match.email;
@@ -123,7 +338,6 @@
     }
   }
 
-  // Submit updated remark back to Google Sheet
   async function submitRemark() {
     if (!currentRecord) return;
 
@@ -144,16 +358,15 @@
       const result = await response.json();
 
       if (result.status === "success") {
-        // Update memory so local copy stays fresh
         currentRecord.remark = newRemark;
         statusBox.className = "status-badge ready";
-        statusBox.innerText = "Remark saved to Google Sheet successfully!";
+        statusBox.innerText = "Remark saved successfully!";
       } else {
-        throw new Error("Update failed");
+        throw new Error("Save failed");
       }
     } catch (err) {
       statusBox.className = "status-badge error";
-      statusBox.innerText = "Failed to save remark.";
+      statusBox.innerText = "Failed to save remark";
     }
   }
 </script>
